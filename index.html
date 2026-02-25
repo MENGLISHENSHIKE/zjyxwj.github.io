@@ -2422,7 +2422,7 @@
     </div>
 
     <!-- 后台密码验证面板 -->
-    <div class="password-panel" id="passwordPanel" style="display: none;">
+    <div class="password-panel" id="passwordPanel" style="">
         <h2>管理员登录</h2>
         <input type="password" class="password-input" id="adminPassword" placeholder="请输入管理员密码">
         <button class="login-btn" onclick="verifyAdminPassword()">登录</button>
@@ -2430,7 +2430,7 @@
     </div>
 
     <!-- 后台管理面板 -->
-    <div class="admin-panel" id="adminPanel" style="display: none;">
+    <div class="admin-panel" id="adminPanel" style="">
         <h2>后台管理中心</h2>
         
         <!-- 基础设置区域 -->
@@ -3015,18 +3015,18 @@
             const originalBodyClass = body.className;
             const passwordPanel = document.getElementById('passwordPanel');
             const adminPanel = document.getElementById('adminPanel');
-            const originalPasswordDisplay = passwordPanel ? passwordPanel.style.display : 'none';
-            const originalAdminDisplay = adminPanel ? adminPanel.style.display : 'none';
+            const originalPasswordDisplay = passwordPanel ? passwordPanel.style.display : '';
+            const originalAdminDisplay = adminPanel ? adminPanel.style.display : '';
 
-            // 切换到前台状态
+            // 切换到前台状态：移除类，并清除内联样式（避免残留）
             body.classList.remove('admin-mode');
-            if (passwordPanel) passwordPanel.style.display = 'none';
-            if (adminPanel) adminPanel.style.display = 'none';
+            if (passwordPanel) passwordPanel.style.display = ''; // 清除内联样式
+            if (adminPanel) adminPanel.style.display = '';       // 清除内联样式
 
             // 获取纯前台 HTML
             let htmlContent = document.documentElement.outerHTML;
 
-            // 恢复后台状态（不影响当前操作）
+            // 恢复后台状态
             body.className = originalBodyClass;
             if (passwordPanel) passwordPanel.style.display = originalPasswordDisplay;
             if (adminPanel) adminPanel.style.display = originalAdminDisplay;
