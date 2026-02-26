@@ -7,9 +7,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js?ver=20250225"></script>
+    <!-- 仅保留 crypto-js 用于密码验证 -->
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js?ver=20250225"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js?ver=20250225"></script>
     <style>
         /* 全局样式重置 (保持不变) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -187,39 +186,13 @@
         .admin-section h3 { color: #007bff; margin-bottom: 15px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
         .admin-section h3::before { content: "•"; color: #007bff; font-size: 1.5rem; }
 
-        .style-setting-group { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .style-setting-group label { min-width: 100px; font-weight: 500; color: #333; }
-        .style-setting-group select, .style-setting-group input { padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; flex: 1; min-width: 150px; }
-
-        .page-size-setting { margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-        .page-size-setting label { font-weight: 500; color: #333; min-width: 100px; }
-        .page-size-setting input { padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; width: 80px; outline: none; }
-        .page-size-setting input:focus { border-color: #007bff; }
-        .page-size-setting .admin-btn { flex-shrink: 0; }
-
-        .welcome-editor, .left-announcement-editor, .game-editor-input, .game-search-input {
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px; margin-bottom: 10px;
-            font-family: inherit; font-size: 0.95rem;
-        }
-        .game-editor-input { min-height: auto; margin-bottom: 15px; }
-        .game-search-input { min-height: auto; margin-bottom: 20px; }
-
-        .admin-btn { padding: 8px 16px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
-        .admin-btn:hover { background: #0056b3; }
-
-        .export-btn { background: #17a2b8; margin-left: 10px; }
-        .export-btn:hover { background: #138496; }
-
-        .stats-container { margin-top: 20px; width: 100%; overflow-x: auto; }
-        #hourlyChart { width: 100%; height: 300px; min-width: 300px; }
-        .reset-btn, .delete-btn { background: #dc3545; margin-left: 10px; }
-        .reset-btn:hover, .delete-btn:hover { background: #c82333; }
-
-        .date-selector { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
-        .date-selector label { min-width: 100px; font-weight: 500; }
-        .date-selector input { padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; outline: none; flex: 1; min-width: 180px; }
-        .date-selector input:focus { border-color: #007bff; }
-        .date-selector button { padding: 8px 12px; flex-shrink: 0; }
+        /* 平台按钮组 */
+        .platform-btn-group { display: flex; gap: 10px; margin: 10px 0 15px; flex-wrap: wrap; }
+        .platform-btn { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+        .platform-btn:hover { background: #5a6268; }
+        .platform-btn.pc { background: #28a745; }
+        .platform-btn.android { background: #17a2b8; }
+        .platform-btn.pc-android { background: #ffc107; color: #333; }
 
         .game-list-container { max-height: 200px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee; border-radius: 4px; }
         .game-list-item { padding: 10px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
@@ -231,17 +204,19 @@
         .game-form-group { margin-bottom: 15px; width: 100%; }
         .game-form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.95rem; }
 
-        /* 平台按钮组 */
-        .platform-btn-group { display: flex; gap: 10px; margin: 10px 0 15px; flex-wrap: wrap; }
-        .platform-btn { background: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
-        .platform-btn:hover { background: #5a6268; }
-        .platform-btn.pc { background: #28a745; } /* 加点颜色区分 */
-        .platform-btn.android { background: #17a2b8; }
-        .platform-btn.pc-android { background: #ffc107; color: #333; }
+        .game-editor-input, .game-search-input {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;
+            font-family: inherit; font-size: 0.95rem;
+        }
+        .game-search-input { min-height: auto; margin-bottom: 20px; }
 
+        .admin-btn { padding: 8px 16px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+        .admin-btn:hover { background: #0056b3; }
         .save-game-btn { background: #28a745; }
         .add-game-btn { background: #17a2b8; margin-left: 10px; }
         .delete-btn { background: #dc3545; }
+        .export-btn { background: #17a2b8; margin-left: 10px; }
+        .reset-btn { background: #dc3545; }
 
         .image-upload-area {
             border: 2px dashed #ccc; border-radius: 8px; padding: 20px; text-align: center;
@@ -264,8 +239,7 @@
 
         @media (max-width: 768px) {
             .admin-btn { width: 100%; margin-bottom: 10px; }
-            .add-game-btn, .delete-btn, .reset-btn, .export-btn { margin-left: 0; }
-            .admin-panel { padding: 15px; }
+            .add-game-btn, .delete-btn, .export-btn { margin-left: 0; }
         }
     </style>
 </head>
@@ -273,24 +247,25 @@
     <h1>正经游戏玩家</h1>
     
     <div class="main-container">
-        <!-- 左侧公告栏 -->
+        <!-- 左侧公告栏 · 直接修改下方文字内容即可更新 -->
         <div class="left-announcement" id="leftAnnouncement">
             <h3>公告栏</h3>
-            <div class="left-announcement-content" id="leftAnnouncementContent" style="font-family: Microsoft YaHei, 微软雅黑, sans-serif; color: #2c3e50;">欢迎访问正经游戏玩家！
+            <div class="left-announcement-content" id="leftAnnouncementContent" style="font-family: Microsoft YaHei, 微软雅黑, sans-serif; color: #2c3e50;">
+欢迎访问正经游戏玩家！
 所有游戏资源均为测试用途，请在24小时内删除，禁止商用！
 
 最新更新：2026年2月24日
-问题反馈：XXX@163.com</div>
+            </div>
         </div>
 
         <!-- 右侧内容区 -->
         <div class="content-area">
-            <!-- 顶部欢迎栏 -->
+            <!-- 顶部欢迎栏 · 直接修改下方文字内容即可更新 -->
             <div class="welcome-bar" id="welcomeBar">
                 <h3></h3>
-                <div class="welcome-bar-content" id="welcomeBarContent" style="font-family: Microsoft YaHei, 微软雅黑, sans-serif; color: #2c3e50;">欢迎来到正经游戏玩家！
-这里有最新、最全的游戏资源，
-持续更新，敬请关注！</div>
+                <div class="welcome-bar-content" id="welcomeBarContent" style="font-family: Microsoft YaHei, 微软雅黑, sans-serif; color: #2c3e50;">
+欢迎来到正经游戏玩家游戏库！
+                </div>
             </div>
 
             <!-- 搜索框 -->
@@ -301,6 +276,7 @@
             <!-- 游戏列表容器：新卡片请插入自此位置上方，将显示在最前面 -->
             <div id="gameContainer">
                 <!-- 新游戏卡片请插入自此位置上方，将显示在最前面。插入格式参考下方示例 -->
+                <!-- 以下是测试用静态卡片，将被解析为初始数据，实际运行时会被localStorage覆盖或重新生成 -->
                 <div class='game-card show'>
                     <h2>【PC+安卓】特工 26.6</h2>
                     <p>无需多言</p>
@@ -313,66 +289,67 @@
                     <a href='https://pan.baidu.com/s/1d92AOkT6U6oAx0pJQ7kTCQ?pwd=xfff' class='download-link' target="_blank">点击下载</a>
                     <div class="update-date">更新：2026-02-25</div>
                 </div>
-                <!-- 更多卡片由JS动态生成，静态卡片仅作初始数据源 -->
-            </div>
-<!-- 新游戏卡片请插入自此位置上方，将显示在最前面。 -->
-
-<div class="game-card show">
-    <h2>【PC】怠惰的怪兽公主不想工作</h2>
-    <p>身为一名普通上班族的主角一直过着毫无变化的平凡生活，某天心血来潮在离家女性的寄宿网站上登录住处的主角很快迎来了寄宿对象───身上披着怪兽大衣，自称“怪兽公主”的奇怪女子。</p>
-    <a href="https://pan.baidu.com/s/1Z6NFqPDJUrBP4GFv_gkg_A?pwd=4w3j" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC】姊妹的侍奉</h2>
-    <p>身为富二代的主角，老爸给了你一个月的期限找到适合的结婚对象。但是，等待你的不只是爱情的考验。两位美丽的女仆姐妹、一位神秘的秘书，还有你那因车祸而模糊不清的回忆……当你努力经营公司、应对父亲的压力时，也将逐渐揭开过往的神秘面纱。在商场、情场的双重挑战中，你能透过正确的选择与安排找到真爱并证明自己的能力吗？更重要的是，你能找回失落的记忆，实现高中时期那神秘的约定吗？一场关于爱情、责任与自我发现的豪门恋爱游戏，等待你来揭开谜底！</p>
-    <a href="https://pan.baidu.com/s/1lE9x1TXuea6P1v9Tr_UMbw?pwd=azxf" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC】瞒着姐姐的同居生活——比血更浓的奶茶关系  官方中文</h2>
-    <p>那一天，在那次直播结束之后——得益于神秘赞助人的支援，摆脱了家计困苦的姐姐，与成为了大学生的弟弟。两人本以为，终于找回了“普通的生活”。然而，某天突然出现在头顶上的“亲密度槽”。那无疑是在昭示，两人的关系早已不再“普通”。早晨并肩做饭，夜晚依偎在沙发上看电影。不经意间触碰到的指尖。回过神时，两人独处的时间已变得越来越长。曾在直播镜头前演绎的“虚构之爱”，不知不觉间，在没有镜头的日常生活中，悄然转变为了确切的“真实爱意”——直到跨越那条禁忌界线的那一天为止。温柔地、一点点逐渐升温的姐弟“恋爱模拟”生活，此刻正式开始。</p>
-    <a href="https://pan.baidu.com/s/1anBE_qcFPl0U-3cuiEKgKg?pwd=x99u" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC】最终魔王是岳母  STEAM官方中文【简+繁】</h2>
-    <p>在地狱边境统治一隅的恶魔贵族「伊奥利安」，以高超的性战斗力，建立起一个既堕落又有秩序的领地。副手茱丽叶巡逻时捡到了一名落难少女——公主「浮萝」。这位公主为了逃避政治联姻而从魔王城出走，身心都处于极度不安之中。伊奥利安当机立断，决定护送她穿越地狱，不仅是为了交还公主，更是为了——向魔王提亲！于是一名贵族、一位公主、一名副手与一位魅魔医官，踏上了这段提亲之旅。</p>
-    <a href="https://pan.baidu.com/s/1VBOMkT4zFFHeGJzGe4VvsA?pwd=qkry" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC+安卓】请让我高潮 魅魔·葵夜   官方中文</h2>
-    <p>魅魔葵会在漆黑的夜晚突然出现。她专门寻找那些欲望过剩的宅男，慢慢将他们逼入绝境，折磨他们，并从榨干他们最后一滴精液中获得快感。</p>
-    <a href="https://pan.baidu.com/s/1Cvm9wWH3Nx-AZb3voHunQA?pwd=q5ki" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC+安卓】陷落度假村   Trap Resort</h2>
-    <p>欢迎来到天堂…还是地狱？你刚继承了一座破败的热带度假村但有个条件——你的全部员工仅由三位美得令人窒息的伪娘组成她们都迫不及待地要让你的生活变得…刺激。没有客人、没有资金，以及比七月坏掉的空调更燥热的性张力，你能否在撩拨、混乱和与诱人员工们突如其来的浪漫邂逅中将这座度假村打造成五星级天堂？你将成功经营事业…还是沉沦于诱惑不可自拔？</p>
-    <a href="https://pan.baidu.com/s/19xsRedD1o5JVmvEah85TMA?pwd=xteb" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC】与你手牵手   おててつないで</h2>
-    <p>由社团“神乳-KAMICHICHI-”呈现的「暑假御姐正太游戏」热爱欧派的社团「神乳」带来的正统成人游戏第6弹，是令人心跳加速、温馨又H的御姐正太暑假角色扮演游戏！「手牵着手」○剧情简介因为妹妹即将出生，暑假期间，我要去母亲亲戚所居住的“梦咲家”所在的夏风村。夏风村是个非常小的乡下村庄。广阔的田园风光。灼热的太阳、蝉与暮蝉的虫鸣。然后……还有那些喜欢着我、既H又充满魅力的姐姐们。在这为期一个月的暑假里，我将「手牵着手」感受到怎样的夏日心动与心跳加速呢？那……当然取决于你。</p>
-    <a href="https://pan.baidu.com/s/1jr6sw3HBGEf5m73JDrYNeQ?pwd=seqy" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
-<div class="game-card show">
-    <h2>【PC+安卓】漂泊宿命   Driftborne</h2>
-    <p>你将扮演约翰，一个被卷入人际关系、戏剧性事件和艰难抉择漩涡中的年轻人。他周围的世界充满了曲折离奇的事件和后果，你的每一个决定都将对故事走向产生深远的影响。期待浪漫的爱情、跌宕起伏的情感、意想不到的转折、欢笑和诸多惊喜吧！</p>
-    <a href="https://pan.baidu.com/s/1RxKH851YE46QeLqPKdgyBw?pwd=rc3g" class="download-link" target="_blank">点击下载</a>
-    <div class="update-date">更新：2026-02-25</div>
-    </div>
-
+                <!-- 新增十个测试卡片 -->
+                <div class='game-card show'>
+                    <h2>【PC】怠惰的怪兽公主不想工作</h2>
+                    <p>身为一名普通上班族的主角一直过着毫无变化的平凡生活，某天心血来潮在离家女性的寄宿网站上登录住处的主角很快迎来了寄宿对象───身上披着怪兽大衣，自称“怪兽公主”的奇怪女子。</p>
+                    <a href="https://pan.baidu.com/s/1Z6NFqPDJUrBP4GFv_gkg_A?pwd=4w3j" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC】姊妹的侍奉</h2>
+                    <p>身为富二代的主角，老爸给了你一个月的期限找到适合的结婚对象。但是，等待你的不只是爱情的考验。两位美丽的女仆姐妹、一位神秘的秘书，还有你那因车祸而模糊不清的回忆……当你努力经营公司、应对父亲的压力时，也将逐渐揭开过往的神秘面纱。在商场、情场的双重挑战中，你能透过正确的选择与安排找到真爱并证明自己的能力吗？更重要的是，你能找回失落的记忆，实现高中时期那神秘的约定吗？一场关于爱情、责任与自我发现的豪门恋爱游戏，等待你来揭开谜底！</p>
+                    <a href="https://pan.baidu.com/s/1lE9x1TXuea6P1v9Tr_UMbw?pwd=azxf" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC】瞒着姐姐的同居生活——比血更浓的奶茶关系  官方中文</h2>
+                    <p>那一天，在那次直播结束之后——得益于神秘赞助人的支援，摆脱了家计困苦的姐姐，与成为了大学生的弟弟。两人本以为，终于找回了“普通的生活”。然而，某天突然出现在头顶上的“亲密度槽”。那无疑是在昭示，两人的关系早已不再“普通”。早晨并肩做饭，夜晚依偎在沙发上看电影。不经意间触碰到的指尖。回过神时，两人独处的时间已变得越来越长。曾在直播镜头前演绎的“虚构之爱”，不知不觉间，在没有镜头的日常生活中，悄然转变为了确切的“真实爱意”——直到跨越那条禁忌界线的那一天为止。温柔地、一点点逐渐升温的姐弟“恋爱模拟”生活，此刻正式开始。</p>
+                    <a href="https://pan.baidu.com/s/1anBE_qcFPl0U-3cuiEKgKg?pwd=x99u" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC】最终魔王是岳母  STEAM官方中文【简+繁】</h2>
+                    <p>在地狱边境统治一隅的恶魔贵族「伊奥利安」，以高超的性战斗力，建立起一个既堕落又有秩序的领地。副手茱丽叶巡逻时捡到了一名落难少女——公主「浮萝」。这位公主为了逃避政治联姻而从魔王城出走，身心都处于极度不安之中。伊奥利安当机立断，决定护送她穿越地狱，不仅是为了交还公主，更是为了——向魔王提亲！于是一名贵族、一位公主、一名副手与一位魅魔医官，踏上了这段提亲之旅。</p>
+                    <a href="https://pan.baidu.com/s/1VBOMkT4zFFHeGJzGe4VvsA?pwd=qkry" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC+安卓】请让我高潮 魅魔·葵夜   官方中文</h2>
+                    <p>魅魔葵会在漆黑的夜晚突然出现。她专门寻找那些欲望过剩的宅男，慢慢将他们逼入绝境，折磨他们，并从榨干他们最后一滴精液中获得快感。</p>
+                    <a href="https://pan.baidu.com/s/1Cvm9wWH3Nx-AZb3voHunQA?pwd=q5ki" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC+安卓】陷落度假村   Trap Resort</h2>
+                    <p>欢迎来到天堂…还是地狱？你刚继承了一座破败的热带度假村但有个条件——你的全部员工仅由三位美得令人窒息的伪娘组成她们都迫不及待地要让你的生活变得…刺激。没有客人、没有资金，以及比七月坏掉的空调更燥热的性张力，你能否在撩拨、混乱和与诱人员工们突如其来的浪漫邂逅中将这座度假村打造成五星级天堂？你将成功经营事业…还是沉沦于诱惑不可自拔？</p>
+                    <a href="https://pan.baidu.com/s/19xsRedD1o5JVmvEah85TMA?pwd=xteb" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC】与你手牵手   おててつないで</h2>
+                    <p>由社团“神乳-KAMICHICHI-”呈现的「暑假御姐正太游戏」热爱欧派的社团「神乳」带来的正统成人游戏第6弹，是令人心跳加速、温馨又H的御姐正太暑假角色扮演游戏！「手牵着手」○剧情简介因为妹妹即将出生，暑假期间，我要去母亲亲戚所居住的“梦咲家”所在的夏风村。夏风村是个非常小的乡下村庄。广阔的田园风光。灼热的太阳、蝉与暮蝉的虫鸣。然后……还有那些喜欢着我、既H又充满魅力的姐姐们。在这为期一个月的暑假里，我将「手牵着手」感受到怎样的夏日心动与心跳加速呢？那……当然取决于你。</p>
+                    <a href="https://pan.baidu.com/s/1jr6sw3HBGEf5m73JDrYNeQ?pwd=seqy" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC+安卓】漂泊宿命   Driftborne</h2>
+                    <p>你将扮演约翰，一个被卷入人际关系、戏剧性事件和艰难抉择漩涡中的年轻人。他周围的世界充满了曲折离奇的事件和后果，你的每一个决定都将对故事走向产生深远的影响。期待浪漫的爱情、跌宕起伏的情感、意想不到的转折、欢笑和诸多惊喜吧！</p>
+                    <a href="https://pan.baidu.com/s/1RxKH851YE46QeLqPKdgyBw?pwd=rc3g" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【PC】寝取られの学園 ～寝取られ願望の義母と壊れゆく教師と幼なじみ～</h2>
+                    <p>这是一个关于校园、家庭与情感纠葛的故事。玩家将面临多重选择，影响与义母、教师和青梅竹马的关系。</p>
+                    <a href="#" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
+                <div class='game-card show'>
+                    <h2>【安卓】妹生活 ～妹妹的甜蜜同居～</h2>
+                    <p>与妹妹开始同居生活的温馨故事。通过日常互动增进感情，体验纯爱日常。</p>
+                    <a href="#" class='download-link' target="_blank">点击下载</a>
+                    <div class="update-date">更新：2026-02-25</div>
+                </div>
 <div class="game-card show">
     <h2>【PC+安卓】欲望的驱使    Driven by Desire</h2>
     <p>一个来自乡村的普通男孩在成年并完成学业后在每天的乡村生活中都会问自己一个问题：下一步该怎么办？是永远留在这里，还是克服恐惧去大城市闯荡大城市会用性感的女孩和美好的前景来吸引这个年轻人还是他会留在村子里，永远无法体验外面的世界</p>
@@ -2010,8 +1987,7 @@
     <a href="https://pan.baidu.com/s/1N67c2QSyfcJB6jLJnMNeXg?pwd=zm5c" class="download-link" target="_blank">点击下载</a>
     <div class="update-date">更新：2026-02-25</div>
     </div>
-
-
+            </div>
 
             <!-- 无数据提示 -->
             <div class="no-data" id="noData" style="display: none;">暂无匹配的游戏</div>
@@ -2029,70 +2005,17 @@
         <div class="error-tip" id="passwordError">密码错误，请重试！</div>
     </div>
 
-    <!-- 后台管理面板 -->
+    <!-- 后台管理面板 · 仅保留：游戏卡片管理 + 导出卡片代码 (已移除分页设置) -->
     <div class="admin-panel" id="adminPanel" style="">
-        <h2>后台管理中心</h2>
-        
-        <!-- 基础设置区域 (已移除导出源代码按钮) -->
+        <h2>后台管理中心 (卡片编辑 & 导出)</h2>
+
+        <!-- 游戏卡片管理区域 -->
         <div class="admin-section">
-            <h3>基础设置</h3>
-            <div class="page-size-setting">
-                <label>每页显示卡片数：</label>
-                <input type="number" id="pageSizeInput" min="1" max="20" placeholder="默认5">
-                <button class="admin-btn" onclick="savePageSize()">保存设置</button>
-                <span id="pageSizeTip" style="color: #28a745; display: none;">设置保存成功！</span>
-            </div>
-        </div>
-        
-        <!-- 欢迎栏管理区域 -->
-        <div class="admin-section">
-            <h3>欢迎栏管理</h3>
-            <textarea class="welcome-editor" id="welcomeEditor" placeholder="输入欢迎栏内容..."></textarea>
-            <div class="style-setting-group">
-                <label>字体：</label>
-                <select id="welcomeFontSelect">
-                    <option value="Microsoft YaHei, 微软雅黑, sans-serif">微软雅黑</option>
-                    <option value="SimSun, 宋体, serif">宋体</option>
-                    <option value="SimHei, 黑体, sans-serif">黑体</option>
-                    <option value="Arial, Helvetica, sans-serif">Arial</option>
-                    <option value="Times New Roman, Times, serif">Times New Roman</option>
-                </select>
-            </div>
-            <div class="style-setting-group">
-                <label>字体颜色：</label>
-                <input type="color" id="welcomeColorInput" value="#2c3e50">
-            </div>
-            <button class="admin-btn" onclick="saveWelcomeBar()">保存欢迎栏</button>
-        </div>
-        
-        <!-- 左侧公告栏管理区域 -->
-        <div class="admin-section">
-            <h3>左侧公告栏管理</h3>
-            <textarea class="left-announcement-editor" id="leftAnnouncementEditor" placeholder="输入公告栏内容..."></textarea>
-            <div class="style-setting-group">
-                <label>字体：</label>
-                <select id="announcementFontSelect">
-                    <option value="Microsoft YaHei, 微软雅黑, sans-serif">微软雅黑</option>
-                    <option value="SimSun, 宋体, serif">宋体</option>
-                    <option value="SimHei, 黑体, sans-serif">黑体</option>
-                    <option value="Arial, Helvetica, sans-serif">Arial</option>
-                    <option value="Times New Roman, Times, serif">Times New Roman</option>
-                </select>
-            </div>
-            <div class="style-setting-group">
-                <label>字体颜色：</label>
-                <input type="color" id="announcementColorInput" value="#2c3e50">
-            </div>
-            <button class="admin-btn" onclick="saveLeftAnnouncement()">保存公告栏</button>
-        </div>
-        
-        <!-- 游戏卡片管理区域（平台下拉框已替换为三个按钮） -->
-        <div class="admin-section">
-            <h3>游戏卡片管理</h3>
+            <h3>📋 游戏卡片管理</h3>
             <input type="text" class="game-search-input" id="gameSearchInput" placeholder="输入游戏名快速定位...">
             <div id="gameListContainer" class="game-list-container"></div>
             
-            <!-- 平台按钮组：点击直接前置前缀 -->
+            <!-- 平台按钮组 -->
             <div class="platform-btn-group">
                 <button class="platform-btn pc" onclick="insertPlatformPrefix('【PC】')">PC</button>
                 <button class="platform-btn android" onclick="insertPlatformPrefix('【安卓】')">安卓</button>
@@ -2131,12 +2054,12 @@
             <button class="admin-btn delete-btn" onclick="deleteGameCard()">删除当前游戏</button>
         </div>
 
-        <!-- 新增：导出游戏卡片代码区域 -->
+        <!-- 导出游戏卡片代码区域 -->
         <div class="admin-section">
             <h3>📤 导出游戏卡片代码 (TXT)</h3>
-            <div class="date-selector" style="margin-bottom: 10px;">
+            <div class="date-selector" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
                 <label>按更新日期筛选：</label>
-                <input type="date" id="exportFilterDate" value="">
+                <input type="date" id="exportFilterDate" value="" style="padding:8px;">
                 <button class="admin-btn" onclick="filterGamesForExport()">筛选</button>
                 <label style="margin-left: 10px;"><input type="checkbox" id="exportSelectAll" onchange="toggleSelectAllExport()"> 全选</label>
                 <button class="admin-btn export-btn" onclick="exportSelectedGames()" style="margin-left: auto;">导出选中卡片</button>
@@ -2145,21 +2068,6 @@
                 <!-- 动态生成带复选框的游戏列表 -->
             </div>
             <p style="color:#666; font-size:0.85rem;">勾选需要导出的游戏，点击导出生成TXT文件（包含HTML卡片代码）。</p>
-        </div>
-        
-        <!-- 访问量统计区域 (保持原有，函数已补全) -->
-        <div class="admin-section">
-            <h3>网站访问量统计</h3>
-            <div class="date-selector">
-                <label>选择日期：</label>
-                <input type="date" id="statsDatePicker" placeholder="选择日期" max="2026-02-25">
-                <button class="admin-btn" onclick="loadStatsByDate()">查询该日数据</button>
-                <button class="admin-btn export-btn" onclick="exportStatsToExcel()">导出为Excel</button>
-            </div>
-            <div class="stats-container">
-                <canvas id="hourlyChart"></canvas>
-            </div>
-            <button class="admin-btn reset-btn" onclick="resetVisitStats()">重置所有访问量数据</button>
         </div>
         
         <!-- 退出后台按钮 -->
@@ -2171,12 +2079,15 @@
         const ADMIN_PASSWORD = "admin123"; // 修改这里即可
         // ====================== 加密逻辑自动生效 ======================
 
-        // 全局配置
-        let PAGE_SIZE = parseInt(localStorage.getItem('pageSize')) || 5;
+        // ============================================================
+        // 分页默认设置 · 直接修改下方 PAGE_SIZE 的值即可调整每页卡片数
+        // ============================================================
+        const PAGE_SIZE = 5;  // 默认每页显示5张，可改为任意数字（建议1-20）
+
         const MAX_PAGE_DISPLAY = 10;
         let currentPage = 1;
         let allGames = [];
-        let filteredGames = [];
+        let filteredGames = [];        // 当前显示的卡片（基于搜索过滤后的DOM元素数组）
         let selectedGameId = null;
         let isAdminPage = false;
         const ADMIN_PASSWORD_HASH = CryptoJS.SHA256(ADMIN_PASSWORD).toString(CryptoJS.enc.Hex);
@@ -2199,11 +2110,8 @@
                 document.getElementById('passwordPanel').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 
-                initDatePicker();
-                renderHourlyChart();
+                // 初始化管理功能
                 initGameManagement();
-                initStyleSettings();
-                document.getElementById('pageSizeInput').value = PAGE_SIZE;
                 initImageUploadEvents();
                 // 初始化导出日期为今天
                 const today = formatDate(new Date());
@@ -2255,30 +2163,13 @@
             return `${y}-${m}-${d}`;
         }
 
-        // ========== 每页数量设置 ==========
-        function savePageSize() {
-            const pageSizeInput = document.getElementById('pageSizeInput');
-            const pageSizeTip = document.getElementById('pageSizeTip');
-            const newSize = parseInt(pageSizeInput.value.trim());
-            if (isNaN(newSize) || newSize < 1 || newSize > 20) {
-                alert('请输入1-20之间的有效数字！');
-                pageSizeInput.value = PAGE_SIZE;
-                return;
-            }
-            PAGE_SIZE = newSize;
-            localStorage.setItem('pageSize', PAGE_SIZE);
-            renderGameList();
-            renderPagination();
-            pageSizeTip.style.display = "inline-block";
-            setTimeout(() => { pageSizeTip.style.display = "none"; }, 2000);
-        }
-
         // ========== 游戏卡片核心逻辑 ==========
         function initGameData() {
             const savedGames = localStorage.getItem('gameCards');
             if (savedGames) {
                 allGames = JSON.parse(savedGames);
             } else {
+                // 获取静态卡片（包括所有测试卡片）
                 const staticCards = Array.from(document.querySelectorAll('#gameContainer .game-card'));
                 allGames = staticCards.map((card, index) => {
                     const name = card.querySelector('h2')?.textContent || '未命名';
@@ -2294,14 +2185,18 @@
                 });
                 saveGameDataToLocal();
             }
+            // 渲染卡片到页面
             renderGameCardsFromData();
+            // 初始化 filteredGames 为所有卡片
             filteredGames = Array.from(document.querySelectorAll('#gameContainer .game-card'));
+            currentPage = 1;
             renderGameList();
             renderPagination();
         }
 
         function renderGameCardsFromData() {
             const container = document.getElementById('gameContainer');
+            // 清空容器，只保留注释提示
             container.innerHTML = '<!-- 新游戏卡片请插入自此位置上方，将显示在最前面。 -->';
             allGames.forEach(game => {
                 const card = document.createElement('div');
@@ -2321,7 +2216,12 @@
 
         function saveGameDataToLocal() {
             localStorage.setItem('gameCards', JSON.stringify(allGames));
-            renderGameCardsFromData();
+            renderGameCardsFromData();  // 重新生成卡片
+            // 更新 filteredGames 为所有卡片（清除搜索状态）
+            filteredGames = Array.from(document.querySelectorAll('#gameContainer .game-card'));
+            currentPage = 1;
+            renderGameList();
+            renderPagination();
         }
 
         // ========== 后台游戏管理初始化 ==========
@@ -2408,11 +2308,12 @@
             const name = document.getElementById('gameNameInput').value.trim();
             const desc = document.getElementById('gameDescInput').value.trim();
             const link = document.getElementById('gameLinkInput').value.trim();
-            const updateDate = document.getElementById('gameDateInput').value.trim();
+            let updateDate = document.getElementById('gameDateInput').value.trim();
             if (!name || !link) { alert('游戏名称和下载链接不能为空！'); return; }
+            if (!updateDate) updateDate = formatDate(new Date());
             const idx = allGames.findIndex(g => g.id === selectedGameId);
             if (idx !== -1) {
-                allGames[idx] = { ...allGames[idx], name, desc, link, updateDate: updateDate || formatDate(new Date()), image: currentGameImageData };
+                allGames[idx] = { ...allGames[idx], name, desc, link, updateDate, image: currentGameImageData };
                 saveGameDataToLocal();
                 renderGameListToAdmin();
                 alert('修改成功');
@@ -2429,7 +2330,7 @@
                 id: Date.now().toString(),
                 name, desc, link, updateDate, image: currentGameImageData
             };
-            allGames.unshift(newGame); // 新加的在最前面
+            allGames.unshift(newGame);
             saveGameDataToLocal();
             renderGameListToAdmin();
             document.getElementById('gameNameInput').value = '';
@@ -2543,7 +2444,6 @@
             if (checkboxes.length === 0) { alert('请至少选择一个游戏'); return; }
             const selectedIds = Array.from(checkboxes).map(cb => cb.value);
             const gamesToExport = allGames.filter(g => selectedIds.includes(g.id));
-            // 生成卡片HTML代码
             let code = '<!-- 新游戏卡片请插入自此位置上方，将显示在最前面。 -->\n\n';
             gamesToExport.forEach(game => {
                 let imgHtml = game.image ? `<img src="${game.image}" class="game-img" alt="${escapeHtml(game.name)}">\n    ` : '';
@@ -2555,7 +2455,6 @@
                 if (game.updateDate) code += `<div class="update-date">更新：${game.updateDate}</div>\n    `;
                 code += `</div>\n\n`;
             });
-            // 创建下载
             const now = new Date();
             const filename = `游戏卡片_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}.txt`;
             const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
@@ -2566,17 +2465,18 @@
             URL.revokeObjectURL(a.href);
         }
 
-        // ========== 搜索和分页 (保留原有逻辑) ==========
+        // ========== 搜索和分页核心函数 ==========
         function initSearch() {
             const input = document.querySelector('.search-input');
             input.addEventListener('input', function() {
                 const keyword = this.value.trim().toLowerCase();
-                const cards = document.querySelectorAll('#gameContainer .game-card');
-                cards.forEach(card => {
+                const allCards = Array.from(document.querySelectorAll('#gameContainer .game-card'));
+                // 根据标题过滤
+                filteredGames = allCards.filter(card => {
                     const title = card.querySelector('h2')?.textContent.toLowerCase() || '';
-                    card.dataset.filtered = title.includes(keyword) ? 'true' : 'false';
+                    return title.includes(keyword);
                 });
-                currentPage = 1; // 搜索后重置到第一页
+                currentPage = 1;
                 renderGameList();
                 renderPagination();
             });
@@ -2584,31 +2484,32 @@
 
         function renderGameList() {
             const allCards = Array.from(document.querySelectorAll('#gameContainer .game-card'));
-            const filteredCards = allCards.filter(card => card.dataset.filtered !== 'false');
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const end = start + PAGE_SIZE;
-            
             // 先隐藏所有卡片
-            allCards.forEach(card => {
-                card.classList.remove('show');
-            });
-            
-            // 显示当前页的卡片
-            filteredCards.slice(start, end).forEach(card => {
-                card.classList.add('show');
-            });
-            
-            const hasVisible = filteredCards.length > 0 && filteredCards.slice(start, end).length > 0;
-            document.getElementById('noData').style.display = hasVisible ? 'none' : 'block';
+            allCards.forEach(card => card.classList.remove('show'));
+
+            if (filteredGames.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+
+            // 计算当前页在 filteredGames 中的起止索引
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const end = Math.min(start + PAGE_SIZE, filteredGames.length);
+            for (let i = start; i < end; i++) {
+                filteredGames[i].classList.add('show');
+            }
+
+            document.getElementById('noData').style.display = 'none';
         }
 
         function renderPagination() {
-            const allCards = Array.from(document.querySelectorAll('#gameContainer .game-card'));
-            const filteredCards = allCards.filter(card => card.dataset.filtered !== 'false');
-            const totalCards = filteredCards.length;
+            const totalCards = filteredGames.length;
             const totalPages = Math.ceil(totalCards / PAGE_SIZE) || 1;
             const pagination = document.getElementById('pagination');
-            if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
             let html = '';
             const prevDisabled = currentPage === 1 ? 'disabled' : '';
             html += `<a class="page-btn ${prevDisabled}" onclick="changePage(${currentPage-1})">上一页</a>`;
@@ -2625,9 +2526,7 @@
         }
 
         function changePage(page) {
-            const allCards = Array.from(document.querySelectorAll('#gameContainer .game-card'));
-            const filteredCards = allCards.filter(card => card.dataset.filtered !== 'false');
-            const total = Math.ceil(filteredCards.length / PAGE_SIZE);
+            const total = Math.ceil(filteredGames.length / PAGE_SIZE);
             if (page < 1 || page > total) return;
             currentPage = page;
             renderGameList();
@@ -2650,32 +2549,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ========== 以下为保留的原有功能 (简版实现，保证不报错) ==========
-        function initWelcomeBar() { /* 略，但保存功能保留 */ }
-        function initLeftAnnouncement() {}
-        function initStyleSettings() {}
-        function saveWelcomeBar() { alert('欢迎栏保存成功（演示）'); }
-        function saveLeftAnnouncement() { alert('公告栏保存成功（演示）'); }
-        function initDatePicker() { document.getElementById('statsDatePicker').value = formatDate(new Date()); }
-        function renderHourlyChart() { /* 模拟图表 */ new Chart(document.getElementById('hourlyChart'), { type:'line', data:{ labels:Array.from({length:24},(_,i)=>i+'时'), datasets:[{ label:'访问量', data:Array.from({length:24},()=>Math.floor(Math.random()*50)) }] } }); }
-        function loadStatsByDate() { alert('演示：模拟加载数据'); }
-        function exportStatsToExcel() { alert('演示：导出Excel'); }
-        function resetVisitStats() { if(confirm('重置所有访问量？')) alert('已重置'); }
-
         // ========== 页面初始化 ==========
         document.addEventListener('DOMContentLoaded', function() {
-            initVisitStats = function(){}; // 占位
-            initWelcomeBar();
-            initLeftAnnouncement();
             initGameData();
-            // 初始化所有卡片为已过滤（默认显示）
-            document.querySelectorAll('#gameContainer .game-card').forEach(card => {
-                card.dataset.filtered = 'true';
-            });
             checkAdminAccess();
             initSearch();
-            renderGameList();
-            renderPagination();
             document.getElementById('adminPassword')?.addEventListener('keydown', function(e) { if (e.key === 'Enter') verifyAdminPassword(); });
         });
     </script>
